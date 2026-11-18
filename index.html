@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kinesiologie-Tape – Anwendungsanleitung</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#525659; font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+header { position:sticky; top:0; z-index:10; background:#323639; color:#fff; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 4px rgba(0,0,0,.4); }
+header .t { font-size:15px; font-weight:600; }
+header a { color:#fff; background:#1a73e8; text-decoration:none; font-size:13px; padding:6px 12px; border-radius:6px; }
+#status { color:#fff; text-align:center; padding:26px 10px; font-size:14px; }
+#pages { display:flex; flex-direction:column; align-items:center; gap:12px; padding:12px 0 24px; }
+canvas { width:100%; max-width:900px; height:auto; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.45); display:block; }
+</style>
+</head>
+<body>
+<header>
+<div class="t">Kinesiologie-Tape – Anleitung</div>
+<a href="Kinesiologie-Tape-Anleitung.pdf" download>PDF herunterladen</a>
+</header>
+<div id="status">Wird geladen …</div>
+<div id="pages"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+const url = 'Kinesiologie-Tape-Anleitung.pdf';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const container = document.getElementById('pages');
+const status = document.getElementById('status');
+pdfjsLib.getDocument(url).promise.then(async pdf => {
+  status.textContent = '';
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  for (let n = 1; n <= pdf.numPages; n++) {
+    const page = await pdf.getPage(n);
+    const unscaled = page.getViewport({ scale: 1 });
+    const targetWidth = Math.min(container.clientWidth || window.innerWidth, 900);
+    const scale = (targetWidth / unscaled.width) * dpr;
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    container.appendChild(canvas);
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+  }
+}).catch(err => { status.textContent = 'Fehler beim Laden. Bitte Seite neu laden.'; });
+</script>
+</body>
+</html>
